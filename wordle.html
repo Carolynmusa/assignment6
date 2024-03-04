@@ -1,53 +1,140 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Wordle</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .letter {
+            display: inline-block;
+            width: 50px; 
+            height: 50px; 
+            margin: 5px; 
+            border: 2px solid #ccc;
+            text-align: center;
+            line-height: 50px;
+            font-size: 24px; 
+        }
+        .background-gradient {
+            background-image: linear-gradient(45deg, #4b4fe2 33%, #0ec38b);
+            display: inline-block;
+            padding: 50px; /
+            border-radius: 50px; /
+        }
+        .row {
+            margin-top: 10px; /
+        }
+    </style>
 </head>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-  }
-  .container {
-    text-align: center;
-    margin-top: 20px;
-  }
-  .title {
-    font-size: 24px;
-    margin-bottom: 20px;
-  }
-  .background-gradient {
-    width: 200px;
-    height: 200px;
-    background-image: linear-gradient(45deg, #4b4fe2 33%, #0ec38b);
-  }
-  .board {
-    display: inline-block;
-    margin: 20px;
-  }
-  .row {
-    display: flex;
-  }
-  .square {
-    width: 100px;
-    height: 100px;
-    background-color: #eab1d7;
-    border: 5px solid #999;
-    text-align: center;
-    line-height: 100px;
-    font-size: 40px;
-    cursor: pointer;
-  }
-  .square:hover {
-    background-color: #ccc;
-  }
-  .x {
-    color: blue;
-  }
-  .o {
-    color: red;
-  }
-</style>
+<body>
+    <div class="container">
+        <div class="background-gradient"> 
+            <div class="title">Wordle</div>
+            <div class="game">
+                <div class="debug-mode">
+                    <label for="debug">Debug Mode:</label>
+                    <input type="checkbox" id="debug">
+                </div>
+                <div class="word-display">WORDLE</div>
+                <div class="guesses">You have 6 guesses left.</div>
+                <div class="letters-display">
+                    <div class="row"> 
+                        <div class="letter">A</div>
+                        <div class="letter">B</div>
+                        <div class="letter">C</div>
+                        <div class="letter">D</div>
+                        <div class="letter">E</div>
+                    </div>
+                </div>
+                <div class="input-box">
+                    <input type="text" placeholder="Enter your guess here" id="guessInput">
+                    <button onclick="guessWord()">Guess</button>
+                </div>
+                <div class="result">Result will display here.</div>
+            </div>
+            <div class="stats">Stats: Wins - 0, Losses - 0</div>
+            <div class="game-history">Game history will display here.</div>
+        </div>
+    </div>
+    <script>
+const NUM_ROWS = 6;
+const NUM_COLS = 5;
+    let answer = "WORDLE";
+let guesses = 6;
+let usedLetters = [];
+
+function guessWord() {
+    let guess = document.getElementById('guessInput').value.toUpperCase();
+    
+    if (guess.length !== 5) {
+        alert("Guess must be a 5-letter word.");
+        return;
+    }
+
+    if (!isValidWord(guess)) {
+        alert("Please enter a valid word.");
+        return;
+    }
+
+    if (guess === answer) {
+        alert("You won!");
+        return;
+    }
+
+    guesses--;
+    updateGuessesDisplay();
+
+    if (guesses === 0) {
+        alert("You lost! The answer was " + answer);
+    }
+}
+
+function isValidWord(word) {
+    const url = 'https://wordle-game-api1.p.rapidapi.com/guess';
+const options = {
+	method: 'POST',
+	headers: {
+		'content-type': 'application/json',
+		'X-RapidAPI-Key': 'SIGN-UP-FOR-KEY',
+		'X-RapidAPI-Host': 'wordle-game-api1.p.rapidapi.com'
+	},
+	body: {word: 'apple'}
+};
+
+try {
+	const response = await fetch(url, options);
+	const result = await response.text();
+	console.log(result);
+} catch (error) {
+	console.error(error);
+}
+    return true; 
+}
+
+function updateGuessesDisplay() {
+    document.querySelector('.guesses').textContent = `You have ${guesses} guesses left.`;
+}
+
+function toggleDebug() {
+    let debugMode = document.getElementById('debug').checked;
+    let wordDisplay = document.querySelector('.word-display');
+    wordDisplay.style.visibility = debugMode ? 'visible' : 'hidden';
+}
+
+document.getElementById('debug').addEventListener('change', toggleDebug);
+    </script>
+</body>
 </html>
