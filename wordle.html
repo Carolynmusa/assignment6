@@ -111,24 +111,29 @@
 
         async function isValidWord(word) {
             const url = 'https://wordle-game-api1.p.rapidapi.com/guess';
-            const options = {
-                method: 'POST',
-                headers: {
-                    'content-type': 'application/json',
-                    'X-RapidAPI-Key': 'fed7f30281msh21bb03158e60f1ep1d7162jsneeb61eeac4f1',
-                    'X-RapidAPI-Host': 'wordle-game-api1.p.rapidapi.com'
-                },
-                body: JSON.stringify({ word: word })
-            };
+            const data = JSON.stringify({ word: word });
 
-            try {
-                const response = await fetch(url, options);
-                const result = await response.text();
-                console.log(result);
-            } catch (error) {
-                console.error(error);
-            }
-            return true;
+            const xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+
+            return new Promise((resolve, reject) => {
+                xhr.addEventListener('readystatechange', function () {
+                    if (this.readyState === this.DONE) {
+                        const response = JSON.parse(this.responseText);
+                        if (response.correct) {
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+                    }
+                });
+
+                xhr.open('POST', url);
+                xhr.setRequestHeader('content-type', 'application/json');
+                xhr.setRequestHeader('X-RapidAPI-Key', 'fed7f30281msh21bb03158e60f1ep1d7162jsneeb61eeac4f1');
+                xhr.setRequestHeader('X-RapidAPI-Host', 'wordle-game-api1.p.rapidapi.com');
+                xhr.send(data);
+            });
         }
 
         function updateGuessesDisplay() {
@@ -145,5 +150,6 @@
     </script>
 </body>
 </html>
+
 
 
