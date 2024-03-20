@@ -62,83 +62,93 @@
                 </div>
                 <div class="input-box">
                     <input type="text" placeholder="Enter your guess here" id="guessInput">
-                    <button onclick="guessWord()">Guess</button>
+                    <button onclick="wordleGame.guessWord()">Guess</button>
                 </div>
                 <div class="result">Result will display here.</div>
             </div>
-            <div class="stats">Stats: Wins - 0, Losses - 0</div>
+            <div class="stats">Stats: Wins - <span id="wins">0</span>, Losses - <span id="losses">0</span></div>
             <div class="game-history">Game history will display here.</div>
         </div>
     </div>
     <script>
-        const NUM_ROWS = 6;
-        const NUM_COLS = 5;
-        let answer = "WORDLE";
-        let guesses = 6;
-        let usedLetters = [];
+        const wordleGame = {
+            answer: "WORDLE",
+            guessesLeft: 6,
+            usedLetters: [],
 
-        async function guessWord() {
-            let guess = document.getElementById('guessInput').value.toUpperCase();
+            async guessWord() {
+                let guess = document.getElementById('guessInput').value.toUpperCase();
 
-            if (guess.length !== 5) {
-                alert("Guess must be a 5-letter word.");
-                return;
-            }
-
-            try {
-                const isValid = await isValidWord(guess);
-                if (!isValid) {
-                    alert("Please enter a valid word.");
+                if (guess.length !== 5) {
+                    alert("Guess must be a 5-letter word.");
                     return;
                 }
 
-                if (guess === answer) {
-                    alert("You won!");
-                    return;
-                }
-
-                guesses--;
-                updateGuessesDisplay();
-
-                if (guesses === 0) {
-                    alert("You lost! The answer was " + answer);
-                }
-            } catch (error) {
-                console.error(error);
-                alert("An error occurred while validating the word.");
-            }
-        }
-
-        async function isValidWord(word) {
-            const url = 'https://wordle-game-api1.p.rapidapi.com/guess';
-            const data = JSON.stringify({ word: word });
-
-            const xhr = new XMLHttpRequest();
-            xhr.withCredentials = true;
-
-            return new Promise((resolve, reject) => {
-                xhr.addEventListener('readystatechange', function () {
-                    if (this.readyState === this.DONE) {
-                        const response = JSON.parse(this.responseText);
-                        if (response.correct) {
-                            resolve(true);
-                        } else {
-                            resolve(false);
-                        }
+                try {
+                    const isValid = await this.isValidWord(guess);
+                    if (!isValid) {
+                        alert("Please enter a valid word.");
+                        return;
                     }
+
+                    if (guess === this.answer) {
+                        alert("You won!");
+                        this.updateStats(true);
+                        return;
+                    }
+
+                    this.guessesLeft--;
+                    this.updateGuessesDisplay();
+
+                    if (this.guessesLeft === 0) {
+                        alert("You lost! The answer was " + this.answer);
+                        this.updateStats(false);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("An error occurred while validating the word.");
+                }
+            },
+
+            async isValidWord(word) {
+                const url = 'https://wordle-game-api1.p.rapidapi.com/guess';
+                const data = JSON.stringify({ word: word });
+
+                const xhr = new XMLHttpRequest();
+                xhr.withCredentials = true;
+
+                return new Promise((resolve, reject) => {
+                    xhr.addEventListener('readystatechange', function () {
+                        if (this.readyState === this.DONE) {
+                            const response = JSON.parse(this.responseText);
+                            if (response.correct) {
+                                resolve(true);
+                            } else {
+                                resolve(false);
+                            }
+                        }
+                    });
+
+                    xhr.open('POST', url);
+                    xhr.setRequestHeader('content-type', 'application/json');
+                    xhr.setRequestHeader('X-RapidAPI-Key', 'fed7f30281msh21bb03158e60f1ep1d7162jsneeb61eeac4f1');
+                    xhr.setRequestHeader('X-RapidAPI-Host', 'wordle-game-api1.p.rapidapi.com');
+                    xhr.send(data);
                 });
+            },
 
-                xhr.open('POST', url);
-                xhr.setRequestHeader('content-type', 'application/json');
-                xhr.setRequestHeader('X-RapidAPI-Key', 'fed7f30281msh21bb03158e60f1ep1d7162jsneeb61eeac4f1');
-                xhr.setRequestHeader('X-RapidAPI-Host', 'wordle-game-api1.p.rapidapi.com');
-                xhr.send(data);
-            });
-        }
+            updateGuessesDisplay() {
+                document.querySelector('.guesses').textContent = `You have ${this.guessesLeft} guesses left.`;
+            },
 
-        function updateGuessesDisplay() {
-            document.querySelector('.guesses').textContent = `You have ${guesses} guesses left.`;
-        }
+            updateStats(win) {
+                if (win) {
+                    document.getElementById('wins').textContent = parseInt(document.getElementById('wins').textContent) + 1;
+                } else {
+                    document.getElementById('losses').textContent = parseInt(document.getElementById('losses').textContent) + 1;
+                }
+            }
+        };
 
         function toggleDebug() {
             let debugMode = document.getElementById('debug').checked;
@@ -150,6 +160,7 @@
     </script>
 </body>
 </html>
+
 
 
 
